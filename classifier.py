@@ -19,3 +19,14 @@ def getData():
     l_src = filter(None, l_src)
 
     return l_src
+    
+    
+def dictTag():
+    d_id = dict()
+
+    for i in range(len(getData())):
+        v_id = re.search("^\d{6}", getData()[i])
+        v_tag = re.search("\"(\d{6})", getData()[i])
+        d_id[v_id.group(0)] = v_tag.group(1)
+
+    return d_id
