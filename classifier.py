@@ -1,29 +1,29 @@
-import re, string
+import re, string, itertools, operator
 from collections import defaultdict, Counter
+from operator import itemgetter
+from itertools import groupby
 
 def getData():
     with file('train/sanction.cor') as f:
         src = f.read()
-
-#extract each entry in the training data
+### Extract each entry in the training data.
     l_src = src.split(" \n\n")
+
     m = list()
     for i in l_src:
         m.append(re.match('\<tag.*?\/\>', i))
-
-#create bag of words for each context. tokenize, lowercase,
-#remove stopwords
+### Create bag of words for each context. Tokenize and lowercase.
     l_tok = list()
     l_src = [w.lower() for w in l_src]
-#remove empty strings
     l_src = filter(None, l_src)
 
     return l_src
-    
-    
+
+
+### Returns a dictionary of the form test_id:tag_id
+### Used later on in countSID() to count instances of each sense ID
 def dictTag():
     d_id = dict()
-
     for i in range(len(getData())):
         v_id = re.search("^\d{6}", getData()[i])
         v_tag = re.search("\"(\d{6})", getData()[i])
@@ -32,8 +32,9 @@ def dictTag():
     return d_id
 
 
+### Returns a list of tuples of the form (sense_id, news_item) where the news_item
+### has been tokenized and stripped of punctuation and stopwords.
 def cleanData():
-
     d_clean = dict()
     l_pairs = list()
     l_clean = getData()
@@ -45,7 +46,6 @@ def cleanData():
         l_clean[i] = l_clean[i].translate(None, string.punctuation)
         l_clean[i] = re.sub("  | tag | \w{1} ", " ", l_clean[i])
         l_clean[i] = [word for word in l_clean[i].split() if word not in l_stop]
-
         l_pairs.append((s_id, l_clean[i]))
-
+        
     return l_pairs
