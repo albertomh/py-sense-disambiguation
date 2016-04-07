@@ -49,3 +49,40 @@ def cleanData():
         l_pairs.append((s_id, l_clean[i]))
         
     return l_pairs
+
+
+### Variable storing list of all possible sense IDs (tags).
+set_val = set(dictTag().values())
+
+
+### Returns a dictionary of the form {'sense_id': probability} where probability
+### is the prior probability of each sense class, smoothed according to parameter L.
+def countSID(L):
+    d_cSID = dict()
+    set_val = set(dictTag().values())
+    for i in set_val:
+            d_cSID[i] = float(dictTag().values().count(i)+L)/float(len(cleanData())+L*len(set_val))
+            
+    return d_cSID
+
+
+### cv(L) calculates the probability of each word given a sense class.
+### Returns d2, where d2 is a dictionary of the form {sense_id1: {word: probability, w: p}, sense_id2: {w: p, w: p}. . .}
+### Smoothing is set by the parameter L.
+def cv(L):
+    global set_val
+    res = defaultdict(list)
+    for k, v in cleanData():
+        res[k].append(v)
+
+    res = dict(res)
+    for i in set_val:
+        res[str(i)] = [item for sublist in res[str(i)] for item in sublist]
+
+    d1 = dict()
+    d2 = dict()
+    for i in set_val:
+        d1[i] = (dict((word, float(res[i].count(word))) for word in set(res[i])))
+        d2[i] = (dict((word, float(res[i].count(word)+L)/float(sum(d1[str(i)].values())+L*len(d1[i]))) for word in set(res[i])))
+
+    return d2
