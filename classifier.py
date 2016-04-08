@@ -165,3 +165,36 @@ def pc(i):
 
     with open("results.txt", "a") as outfile:
         outfile.write(s_res)
+
+
+### Looks up tagid in dictionary.
+def ld():
+    d_tag = dict()
+    with file('dict/sanction.dic') as f:
+        tagdict = f.read()
+
+        all_tags = re.findall('uid.*?\>', tagdict)
+
+        for i in all_tags:
+            uid = re.search('\d{6}', i)
+            tag = re.search('tag\=(.*?)\>', i)
+            d_tag[uid.group(0)] = tag.group(1)
+        return d_tag
+
+
+### Calculates percentage of correct sense disambiguations and returns percentage value along a list of
+### the snippet ID and sense that were correctly classified.
+def check():
+    gold = [line.rstrip('\n') for line in open('gold/sanction-p')]
+    res = [line.rstrip('\n') for line in open('results.txt')]
+    for i in range(len(res)):
+       res[i] = re.sub('\d{6}\:', "", res[i])
+
+    counter=0
+    correct = list()
+    for i in range(len(res)):
+        if str(res[i]) in gold[i]:
+            counter+=1
+            correct.append(gold[i])
+
+    return str(round(float(counter)*100/len(res), 3)) + "% of sense disambiguations were correct." + " These corresponded to the following test phrases and meanings:" + str(correct)
