@@ -86,3 +86,40 @@ def cv(L):
         d2[i] = (dict((word, float(res[i].count(word)+L)/float(sum(d1[str(i)].values())+L*len(d1[i]))) for word in set(res[i])))
 
     return d2
+
+
+##################################################################################
+### Same code as was used above to fetch training data, here used to get test data.
+def getTest():
+
+    with file('test/sanction-p.eval') as f:
+        src = f.read()
+    l_src = src.split(" \n\n")
+
+    m = list()
+    for i in l_src:
+        m.append(re.match('\<tag.*?\/\>', i))
+    l_tok = list()
+    l_src = [w.lower() for w in l_src]
+    l_src = filter(None, l_src)
+
+    return l_src
+
+### As was done above with the training data; tokenizing and stripping test data.
+def cleanTest():
+
+    d_clean = dict()
+    l_pairs = list()
+    l_clean = getTest()
+    l_stop = ["he", "she", "and", "it", "its", "that", "to", "a", "or", "by", "mine", "my", "your", "yours", "their", "theirs", "theyre", "he", "she", "them", "is", "are", "we", "our", "ours", "his", "her", "i", "if", "but", "be", "will", "the", "like", "has", "have", "mr", "mrs", "with", "not", "in", "of", "for", "was", "when", "they", "all", "an", "were", "had", "also", "as", "no", "what", "tag", "from", "on", "dr", "do", "this", "at", "even"]
+
+    for i in range(len(l_clean)):
+        s_id = re.search("(\d{6})", l_clean[i]).group(1)
+        l_clean[i] = re.sub("\d|\\n|\&.*?\.|\'s|\<tag\>.*?\<\/\>", "", l_clean[i])
+        l_clean[i] = l_clean[i].translate(None, string.punctuation)
+        l_clean[i] = re.sub("  | \w{1} ", " ", l_clean[i])
+        l_clean[i] = [word for word in l_clean[i].split() if word not in l_stop]
+        l_pairs.append((s_id, l_clean[i]))
+
+    return l_pairs
+##################################################################################
