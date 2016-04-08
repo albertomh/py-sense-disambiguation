@@ -123,3 +123,45 @@ def cleanTest():
 
     return l_pairs
 ##################################################################################
+
+
+### Returns probabilities of a word given a sense class for words
+### found in the context of the test data.
+def lp(i):
+    l_p = list()
+    for uid in set_val:
+        for word in cleanTest()[i][1]:
+            if word in cv(1)[uid].keys():
+                l_p.append((uid, cv(1)[uid][word]))
+    
+    return l_p
+
+
+### accumulate() multiplies together the probabilities of seeing each word featurengiven some sense label. Takes a list as an argument.
+### Returns a list of tuples of the form (sense_id, product_of_probabilities)
+### ATTRIBUTION: CODE FOR reduce(...): http://bit.ly/158kuNl
+def accumulate(l):
+    it = itertools.groupby(l, operator.itemgetter(0))
+    for key, subiter in it:
+       yield key, reduce(operator.mul, (item[1] for item in subiter))
+
+
+### Multiplies together probabilities of a word feature given a sense class and the probability of the corresponding sense label.
+### Fetches the label with the highest probability, stores it as tagid.
+### trans looks up tagid in the dict/sanction.dic file by using the ld() function defined below.
+###
+### Writes a text file of a format identical to the gold standard file for easy comparison later.
+### The format follows 'snippet_ID:sense', with each entry on a new line.
+def pc(i):
+    l_lp = list()
+    for (k, v) in lp(i):
+        for (k2, v2) in countSID(1).iteritems():
+            if k==k2:
+                l_lp.append((k, v*v2))
+
+    tagid = max(list(accumulate(l_lp)),key=itemgetter(1))[0]
+    trans = [value for key, value in ld().items() if tagid==key]
+    s_res = str(cleanTest()[i][0]) + ":" + str(trans[0]) + "\n"
+
+    with open("results.txt", "a") as outfile:
+        outfile.write(s_res)
